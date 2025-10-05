@@ -1,38 +1,9 @@
-!apt-get -y update
-!apt-get -y install gnuplot
-!pip -q install PyGnuplot gnuplotlib
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from collections import Counter
 from pathlib import Path
 import subprocess, textwrap
-
-def gnuhist(counts_densities, widths, centers, outfpath:Path, logxy_flg=False):
-    outfpath = str(outfpath).replace('\\','/')
-    logscale = {True:"set logscale xy", False:""}[logxy_flg]
-    data_block = "\n".join(f"{x} {y} {w}" for x,y,w in zip(centers, counts_densities, widths))
-    print(outfpath, logscale)
-    xmin = {True:centers[0]/2, False:(centers[0]-widths[0])/1.1}[logxy_flg]
-    xmax = {True:centers[-1]*2, False:(centers[-1]+widths[-1])*1.1}[logxy_flg]
-
-    ymin = {True:counts_densities[counts_densities!=0].min()/2, False:0}[logxy_flg]
-    ymax = {True:counts_densities.max()*2, False:counts_densities.max()*1.1}[logxy_flg]
-
-    script = textwrap.dedent(f"""
-        set term pngcairo size 800,500
-        set output '{outfpath}'
-        {logscale}
-        set xrange [{xmin}:{xmax}]
-        set yrange [{ymin}:{ymax}]
-        set style fill solid 0.5
-        set boxwidth 0.9 relative
-        plot '-' using 1:2:(0.9*$3) with boxes notitle
-        {data_block}
-        e
-    """)
-    subprocess.run(["gnuplot"], input=script.encode("utf-8"), check=True)
 
 def func_hist(data, xmin=None, xmax=None, binno=20, density_flg=True):
     """
